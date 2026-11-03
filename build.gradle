@@ -1,15 +1,12 @@
-// MinecraftForge 26.3 — ForgeGradle 7 (no Sponge Mixin plugin)
-// Copy gradlew + gradle/wrapper from a Forge 26.3 MDK if missing.
-
 plugins {
-    id 'java'
+    id 'java-library'
+    id 'maven-publish'
+    id 'net.neoforged.moddev' version '2.0.148'
     id 'idea'
-    id 'eclipse'
-    id 'net.minecraftforge.gradle' version '[7.0.17,8)'
 }
 
 version = mod_version
-group = mod_group
+group = mod_group_id
 
 base {
     archivesName = mod_id
@@ -17,49 +14,47 @@ base {
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(25)
 
-minecraft {
+neoForge {
+    version = project.neo_version
+
     runs {
-        configureEach {
-            workingDir = layout.projectDirectory.dir('run')
-            systemProperty 'eventbus.api.strictRuntimeChecks', 'true'
+        client {
+            client()
         }
-        register('client')
-        register('server') {
-            args '--nogui'
+        server {
+            server()
+            programArgument '--nogui'
+        }
+    }
+
+    mods {
+        "${mod_id}" {
+            sourceSet sourceSets.main
         }
     }
 }
 
-repositories {
-    minecraft.mavenizer(it)
-    maven fg.forgeMaven
-    maven fg.minecraftLibsMaven
-    mavenCentral()
+var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {
+    var replaceProperties = [
+            minecraft_version      : minecraft_version,
+            minecraft_version_range: minecraft_version_range,
+            neo_version            : neo_version,
+            mod_id                 : mod_id,
+            mod_name               : mod_name,
+            mod_license            : mod_license,
+            mod_version            : mod_version,
+            mod_authors            : mod_authors,
+    ]
+    inputs.properties replaceProperties
+    expand replaceProperties
+    from "src/main/templates"
+    into "build/generated/sources/modMetadata"
 }
-
-dependencies {
-    implementation minecraft.dependency('net.minecraftforge:forge:26.3-66.1.0')
-    annotationProcessor 'net.minecraftforge:eventbus-validator:7.0-beta.7'
-}
+sourceSets.main.resources.srcDir generateModMetadata
+neoForge.ideSyncTask generateModMetadata
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
-}
-
-processResources {
-    var replaceProperties = [
-            mod_id            : mod_id,
-            mod_name          : mod_name,
-            mod_version       : mod_version,
-            mod_authors       : mod_authors,
-            mod_license       : mod_license,
-            minecraft_version : minecraft_version,
-            forge_spec_version: forge_spec_version,
-    ]
-    inputs.properties replaceProperties
-    filesMatching('META-INF/mods.toml') {
-        expand replaceProperties
-    }
 }
 
 idea {
