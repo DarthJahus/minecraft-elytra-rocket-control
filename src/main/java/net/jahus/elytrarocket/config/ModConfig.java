@@ -25,7 +25,7 @@ public final class ModConfig {
 		/**
 		 * Underwater rocket policy:
 		 * <ul>
-		 *   <li>{@code "flight"} — cancel in water only while also fall-flying</li>
+		 *   <li>{@code "flight"} — no extra water rule (only {@code cancel_rockets_in_flight} applies)</li>
 		 *   <li>{@code "always"} — cancel any rocket use while in water (even if
 		 *       {@code cancel_rockets_in_flight} is false)</li>
 		 * </ul>
@@ -82,22 +82,9 @@ public final class ModConfig {
 		}
 	}
 
-	public static boolean enable() {
-		return data.enable;
-	}
-
-	public static boolean cancelInFlight() {
-		return data.cancel_rockets_in_flight;
-	}
-
 	/** {@code true} when value is {@code "always"}. */
 	public static boolean cancelUnderWaterAlways() {
 		return "always".equalsIgnoreCase(data.cancel_rockets_under_water);
-	}
-
-	/** {@code true} when value is {@code "flight"} (default). */
-	public static boolean cancelUnderWaterOnlyInFlight() {
-		return !cancelUnderWaterAlways();
 	}
 
 	public static String message() {
@@ -114,13 +101,7 @@ public final class ModConfig {
 		if (fallFlying && data.cancel_rockets_in_flight) {
 			return true;
 		}
-		if (inWater) {
-			if (cancelUnderWaterAlways()) {
-				return true;
-			}
-			// "flight": only if also gliding
-			return fallFlying && data.cancel_rockets_in_flight;
-		}
-		return false;
+		// "always" = block all rocket use in water; "flight" = no extra water rule
+		return inWater && cancelUnderWaterAlways();
 	}
 }

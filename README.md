@@ -29,5 +29,7 @@ Ground use of fireworks (launch as projectile) is unchanged.
 - Only ban water rockets, allow elytra rockets: `cancel_rockets_in_flight: false`, `cancel_rockets_under_water: "always"`
 
 ## To-do
-- `boost_multiplier`:
-  - experiments on the **26.3-debug** branch.
+- [ ] `boost_multiplier`:
+- [ ] `in_flight_behavior`: `cancel` (current) vs `projectile` (fire rocket as a normal airborne charge while gliding, no elytra boost)
+
+Experiments on the **26.3-debug** branch.
