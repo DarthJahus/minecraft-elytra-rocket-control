@@ -1,6 +1,9 @@
 # Elytra Rocket Control
 Server-side mod that cancels firework rocket use while gliding and/or underwater.
 
+[![Modrinth](https://img.shields.io/modrinth/dt/jahus-elytra-rocket-control?logo=modrinth&label=Modrinth)](https://modrinth.com/datapack/jahus-elytra-rocket-control)
+[![CurseForge](https://img.shields.io/curseforge/dt/1781633?logo=curseforge&label=CurseForge)](https://www.curseforge.com/projects/1781633)
+
 - No dependencies
 - JSON config in `config/elytra-rocket-control.json`
 
