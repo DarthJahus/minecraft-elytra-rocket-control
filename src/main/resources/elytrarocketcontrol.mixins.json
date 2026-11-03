@@ -4,7 +4,6 @@
   "package": "net.jahus.elytrarocket.mixin",
   "compatibilityLevel": "JAVA_25",
   "mixins": [
-    "FireworkRocketEntityMixin",
     "FireworkRocketItemMixin"
   ],
   "injectors": {

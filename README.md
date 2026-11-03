@@ -1,5 +1,5 @@
 # Elytra Rocket Control
-Server-side mod that controls firework rocket boost while gliding with elytra.
+Server-side mod that cancels firework rocket use while gliding and/or underwater.
 
 - No dependencies
 - JSON config in `config/elytra-rocket-control.json`
@@ -7,21 +7,27 @@ Server-side mod that controls firework rocket boost while gliding with elytra.
 ## Config
 ```json
 {
-  "enabled": true,
-  "boost_multiplier": 0.0,
-  "cancel_use_if_no_boost": true,
-  "message": "Firework boost is disabled while gliding."
+  "enable": true,
+  "cancel_rockets_in_flight": true,
+  "cancel_rockets_under_water": "flight",
+  "message": "Firework rockets cannot be used right now."
 }
 ```
 
 | Key | Default | Meaning |
 |-----|---------|---------|
-| `enabled` | `true` | Master switch |
-| `boost_multiplier` | `0.0` | `0` = no boost, `1` = vanilla, `0.5` = half |
-| `cancel_use_if_no_boost` | `true` | If multiplier ≤ 0, block using rockets while gliding (no consume) |
-| `message` | (see above) | Sent when use is cancelled; empty = silent |
+| `enable` | `true` | Master switch |
+| `cancel_rockets_in_flight` | `true` | Block rockets while fall-flying |
+| `cancel_rockets_under_water` | `"flight"` | `"flight"` = in water only while gliding; `"always"` = any rocket use in water (even if `cancel_rockets_in_flight` is false) |
+| `message` | (see above) | Action bar; empty = silent |
 
 Ground use of fireworks (launch as projectile) is unchanged.
 
-## Known Issues:
-- `boost_multiplier` is not applied [correctly].
+### Examples
+- Gliding only: `cancel_rockets_in_flight: true`, `cancel_rockets_under_water: "flight"`
+- Also ban fireworks in water: `cancel_rockets_under_water: "always"`
+- Only ban water rockets, allow elytra rockets: `cancel_rockets_in_flight: false`, `cancel_rockets_under_water: "always"`
+
+## To-do
+- `boost_multiplier`:
+  - experiments on the **26.3-debug** branch.

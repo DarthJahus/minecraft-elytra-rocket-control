@@ -18,20 +18,21 @@ public final class ModConfig {
 	private static Data data = new Data();
 
 	public static final class Data {
-		/** Master switch. */
-		public boolean enabled = true;
+		/** Master switch for the whole mod. */
+		public boolean enable = true;
+		/** Cancel firework rocket use while gliding (fall flying). */
+		public boolean cancel_rockets_in_flight = true;
 		/**
-		 * Multiplier applied to the elytra firework velocity boost.
-		 * 0.0 = no boost (default), 1.0 = vanilla, 0.5 = half, etc.
+		 * Underwater rocket policy:
+		 * <ul>
+		 *   <li>{@code "flight"} — cancel in water only while also fall-flying</li>
+		 *   <li>{@code "always"} — cancel any rocket use while in water (even if
+		 *       {@code cancel_rockets_in_flight} is false)</li>
+		 * </ul>
 		 */
-		public double boost_multiplier = 0.0;
-		/**
-		 * When boost_multiplier is &lt;= 0, also cancel using a rocket while gliding
-		 * (no item consume, optional message).
-		 */
-		public boolean cancel_use_if_no_boost = true;
-		/** Shown when use is cancelled. Empty string = no message. */
-		public String message = "Firework boost is disabled while gliding.";
+		public String cancel_rockets_under_water = "flight";
+		/** Action-bar message when use is cancelled. Empty = silent. */
+		public String message = "Firework rockets cannot be used right now.";
 	}
 
 	private ModConfig() {}
@@ -49,10 +50,23 @@ public final class ModConfig {
 				data = new Data();
 			}
 		}
+		if (data.cancel_rockets_under_water == null || data.cancel_rockets_under_water.isBlank()) {
+			data.cancel_rockets_under_water = "flight";
+		} else {
+			data.cancel_rockets_under_water = data.cancel_rockets_under_water.trim().toLowerCase();
+			if (!data.cancel_rockets_under_water.equals("always")
+					&& !data.cancel_rockets_under_water.equals("flight")) {
+				ElytraRocketControl.LOGGER.warn(
+						"Unknown cancel_rockets_under_water='{}', falling back to 'flight'",
+						data.cancel_rockets_under_water
+				);
+				data.cancel_rockets_under_water = "flight";
+			}
+		}
 		save();
 		ElytraRocketControl.LOGGER.info(
-				"Config enabled={} boost_multiplier={} cancel_use_if_no_boost={}",
-				data.enabled, data.boost_multiplier, data.cancel_use_if_no_boost
+				"Config enable={} cancel_in_flight={} cancel_under_water={}",
+				data.enable, data.cancel_rockets_in_flight, data.cancel_rockets_under_water
 		);
 	}
 
@@ -68,19 +82,45 @@ public final class ModConfig {
 		}
 	}
 
-	public static boolean enabled() {
-		return data.enabled;
+	public static boolean enable() {
+		return data.enable;
 	}
 
-	public static double boostMultiplier() {
-		return data.boost_multiplier;
+	public static boolean cancelInFlight() {
+		return data.cancel_rockets_in_flight;
 	}
 
-	public static boolean cancelUseIfNoBoost() {
-		return data.cancel_use_if_no_boost;
+	/** {@code true} when value is {@code "always"}. */
+	public static boolean cancelUnderWaterAlways() {
+		return "always".equalsIgnoreCase(data.cancel_rockets_under_water);
+	}
+
+	/** {@code true} when value is {@code "flight"} (default). */
+	public static boolean cancelUnderWaterOnlyInFlight() {
+		return !cancelUnderWaterAlways();
 	}
 
 	public static String message() {
 		return data.message == null ? "" : data.message;
+	}
+
+	/**
+	 * Whether rocket use should be canceled for this player state.
+	 */
+	public static boolean shouldCancel(boolean fallFlying, boolean inWater) {
+		if (!data.enable) {
+			return false;
+		}
+		if (fallFlying && data.cancel_rockets_in_flight) {
+			return true;
+		}
+		if (inWater) {
+			if (cancelUnderWaterAlways()) {
+				return true;
+			}
+			// "flight": only if also gliding
+			return fallFlying && data.cancel_rockets_in_flight;
+		}
+		return false;
 	}
 }

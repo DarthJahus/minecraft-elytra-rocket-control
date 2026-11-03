@@ -12,37 +12,27 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-/**
- * When boost is fully disabled, optionally block using a rocket while gliding
- * so the item is not consumed for no effect.
- */
 @Mixin(FireworkRocketItem.class)
 public abstract class FireworkRocketItemMixin {
 
 	@Inject(method = "use", at = @At("HEAD"), cancellable = true)
-	private void elytrarocket$cancelUseWhileGliding(
+	private void elytrarocket$cancelUse(
 			Level level,
 			Player player,
 			InteractionHand hand,
 			CallbackInfoReturnable<InteractionResult> cir
 	) {
-		if (!ModConfig.enabled()) {
-			return;
-		}
-		if (!player.isFallFlying()) {
-			return;
-		}
-		if (ModConfig.boostMultiplier() > 0.0D) {
-			return;
-		}
-		if (!ModConfig.cancelUseIfNoBoost()) {
+		boolean fallFlying = player.isFallFlying();
+		boolean inWater = player.isInWater();
+
+		if (!ModConfig.shouldCancel(fallFlying, inWater)) {
 			return;
 		}
 
 		if (!level.isClientSide()) {
 			String msg = ModConfig.message();
 			if (!msg.isEmpty()) {
-				player.sendSystemMessage(Component.literal(msg));
+				player.sendOverlayMessage(Component.literal(msg));
 			}
 		}
 

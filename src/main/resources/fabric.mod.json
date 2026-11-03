@@ -3,7 +3,7 @@
   "id": "elytrarocketcontrol",
   "version": "${version}",
   "name": "Elytra Rocket Control",
-  "description": "Control or disable firework rocket boost while gliding with elytra. Server-side, JSON config.",
+  "description": "Disallow firework rocket use while gliding and/or underwater. Server-side, JSON config.",
   "authors": ["Jahus"],
   "contact": {
     "sources": "https://github.com/DarthJahus"
