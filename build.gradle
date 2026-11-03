@@ -1,44 +1,70 @@
+// MinecraftForge 26.3 — ForgeGradle 7 (no Sponge Mixin plugin)
+// Copy gradlew + gradle/wrapper from a Forge 26.3 MDK if missing.
+
 plugins {
-	id 'net.fabricmc.fabric-loom' version "${loom_version}"
-	id 'maven-publish'
+    id 'java'
+    id 'idea'
+    id 'eclipse'
+    id 'net.minecraftforge.gradle' version '[7.0.17,8)'
 }
 
-version = project.mod_version
-group = project.maven_group
+version = mod_version
+group = mod_group
 
 base {
-	archivesName = project.archives_base_name
+    archivesName = mod_id
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(25)
+
+minecraft {
+    runs {
+        configureEach {
+            workingDir = layout.projectDirectory.dir('run')
+            systemProperty 'eventbus.api.strictRuntimeChecks', 'true'
+        }
+        register('client')
+        register('server') {
+            args '--nogui'
+        }
+    }
 }
 
 repositories {
-	mavenCentral()
+    minecraft.mavenizer(it)
+    maven fg.forgeMaven
+    maven fg.minecraftLibsMaven
+    mavenCentral()
 }
 
 dependencies {
-	minecraft "com.mojang:minecraft:${minecraft_version}"
-	implementation "net.fabricmc:fabric-loader:${loader_version}"
-}
-
-processResources {
-	inputs.property 'version', project.version
-	filesMatching('fabric.mod.json') {
-		expand version: project.version
-	}
+    implementation minecraft.dependency('net.minecraftforge:forge:26.3-66.1.0')
+    annotationProcessor 'net.minecraftforge:eventbus-validator:7.0-beta.7'
 }
 
 tasks.withType(JavaCompile).configureEach {
-	it.options.release = 25
-	it.options.encoding = 'UTF-8'
+    options.encoding = 'UTF-8'
 }
 
-java {
-	withSourcesJar()
-	sourceCompatibility = JavaVersion.VERSION_25
-	targetCompatibility = JavaVersion.VERSION_25
+processResources {
+    var replaceProperties = [
+            mod_id            : mod_id,
+            mod_name          : mod_name,
+            mod_version       : mod_version,
+            mod_authors       : mod_authors,
+            mod_license       : mod_license,
+            minecraft_version : minecraft_version,
+            forge_spec_version: forge_spec_version,
+    ]
+    inputs.properties replaceProperties
+    filesMatching('META-INF/mods.toml') {
+        expand replaceProperties
+    }
 }
 
-jar {
-	from('LICENSE') {
-		rename { "${it}_${base.archivesName.get()}" }
-	}
+idea {
+    module {
+        downloadSources = true
+        downloadJavadoc = true
+    }
 }

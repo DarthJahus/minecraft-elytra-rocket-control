@@ -1,19 +1,18 @@
 package net.jahus.elytrarocket;
 
-import net.fabricmc.api.ModInitializer;
-import net.fabricmc.loader.api.FabricLoader;
+import com.mojang.logging.LogUtils;
 import net.jahus.elytrarocket.config.ModConfig;
+import net.minecraftforge.fml.common.Mod;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-public final class ElytraRocketControl implements ModInitializer {
+@Mod(ElytraRocketControl.MOD_ID)
+public final class ElytraRocketControl {
 
 	public static final String MOD_ID = "elytrarocketcontrol";
-	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
+	public static final Logger LOGGER = LogUtils.getLogger();
 
-	@Override
-	public void onInitialize() {
-		ModConfig.load(FabricLoader.getInstance().getConfigDir());
+	public ElytraRocketControl() {
+		ModConfig.load();
 		LOGGER.info("Elytra Rocket Control loaded");
 	}
 }

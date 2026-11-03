@@ -3,6 +3,7 @@ package net.jahus.elytrarocket.config;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.jahus.elytrarocket.ElytraRocketControl;
+import net.minecraftforge.fml.loading.FMLPaths;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -14,33 +15,22 @@ import java.nio.file.Path;
 public final class ModConfig {
 
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
-	private static Path path;
+	private static final Path PATH = FMLPaths.CONFIGDIR.get().resolve("elytra-rocket-control.json");
 	private static Data data = new Data();
 
 	public static final class Data {
-		/** Master switch for the whole mod. */
 		public boolean enable = true;
-		/** Cancel firework rocket use while gliding (fall flying). */
 		public boolean cancel_rockets_in_flight = true;
-		/**
-		 * Underwater rocket policy:
-		 * <ul>
-		 *   <li>{@code "flight"} — no extra water rule (only {@code cancel_rockets_in_flight} applies)</li>
-		 *   <li>{@code "always"} — cancel any rocket use while in water (even if
-		 *       {@code cancel_rockets_in_flight} is false)</li>
-		 * </ul>
-		 */
+		/** {@code "flight"} = no extra water rule; {@code "always"} = cancel any rocket use in water. */
 		public String cancel_rockets_under_water = "flight";
-		/** Action-bar message when use is cancelled. Empty = silent. */
 		public String message = "Firework rockets cannot be used right now.";
 	}
 
 	private ModConfig() {}
 
-	public static void load(Path configDir) {
-		path = configDir.resolve("elytra-rocket-control.json");
-		if (Files.isRegularFile(path)) {
-			try (Reader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
+	public static void load() {
+		if (Files.isRegularFile(PATH)) {
+			try (Reader reader = Files.newBufferedReader(PATH, StandardCharsets.UTF_8)) {
 				Data loaded = GSON.fromJson(reader, Data.class);
 				if (loaded != null) {
 					data = loaded;
@@ -71,10 +61,9 @@ public final class ModConfig {
 	}
 
 	public static void save() {
-		if (path == null) return;
 		try {
-			Files.createDirectories(path.getParent());
-			try (Writer writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
+			Files.createDirectories(PATH.getParent());
+			try (Writer writer = Files.newBufferedWriter(PATH, StandardCharsets.UTF_8)) {
 				GSON.toJson(data, writer);
 			}
 		} catch (IOException e) {
@@ -82,7 +71,6 @@ public final class ModConfig {
 		}
 	}
 
-	/** {@code true} when value is {@code "always"}. */
 	public static boolean cancelUnderWaterAlways() {
 		return "always".equalsIgnoreCase(data.cancel_rockets_under_water);
 	}
@@ -91,9 +79,6 @@ public final class ModConfig {
 		return data.message == null ? "" : data.message;
 	}
 
-	/**
-	 * Whether rocket use should be canceled for this player state.
-	 */
 	public static boolean shouldCancel(boolean fallFlying, boolean inWater) {
 		if (!data.enable) {
 			return false;
@@ -101,7 +86,6 @@ public final class ModConfig {
 		if (fallFlying && data.cancel_rockets_in_flight) {
 			return true;
 		}
-		// "always" = block all rocket use in water; "flight" = no extra water rule
 		return inWater && cancelUnderWaterAlways();
 	}
 }
