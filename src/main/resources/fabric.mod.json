@@ -6,13 +6,16 @@
   "description": "Disallow firework rocket use while gliding and/or underwater. Server-side, JSON config.",
   "authors": ["Jahus"],
   "contact": {
-    "sources": "https://github.com/DarthJahus"
+    "homepage": "https://mc.jahus.net/projects",
+    "sources": "https://github.com/DarthJahus/minecraft-elytra-rocket-control",
+    "issues": "https://github.com/DarthJahus/minecraft-elytra-rocket-control/issues"
   },
   "license": "Apache-2.0",
   "environment": "*",
   "entrypoints": {
     "main": ["net.jahus.elytrarocket.ElytraRocketControl"]
   },
+  "icon": "assets/elytrarocketcontrol/icon.png",
   "mixins": ["elytrarocketcontrol.mixins.json"],
   "depends": {
     "fabricloader": ">=0.19.5",
